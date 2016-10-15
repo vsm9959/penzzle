@@ -17,19 +17,21 @@ var fakesprite5;
 var puzzleSprites= [];
 var puzzleGroup;
 
+var puzzleLevelId;
+
 var fakeHitZone;
 
 var dropZone;
 
 var flipFlag = true;
 
-
+//=============================================================================================================
 function preload() {
     //background
     game.load.image('stars', 'assets/starfield.jpg');
 
     //buttons
-    game.load.image('flip','assets/flipping.png');
+    game.load.image('flip','assets/flipping_transparent.png');
     game.load.image('rotateRight','assets/rotateright.png');
 
     //lego sprites
@@ -38,20 +40,31 @@ function preload() {
 
     //invisible sprite for dragging
     game.load.image('invisible-box','assets/invisible.png');
-}
 
+    //retry button
+    game.load.image('retry','assets/retry.png');
+
+    //level numbers
+    game.load.spritesheet('levels','assets/levelNumbers.png',100,100);
+}
+// ============================================================================================================
 function create() {
     //background
-    var starfield = game.add.tileSprite(0, 0, 800, 600, 'stars');
-    starfield.fixedToCamera = true;
-
-    var style = { font: "bold 32px Arial", fill: "#fff", boundsAlignH: "center", boundsAlignV: "middle" };
-
-    //  The Text is positioned at 0, 100
-    text = game.add.text(350, 0, "Penzzle", style);
+    loadBackground();
 
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
+    game.add.button(game.world.centerX-50, game.world.centerY-50, 'levels', actionOnClick, this, 1, 1, 1);
+}
+// ===========================================================================================================
+function actionOnClick() {
+    game.world.removeAll();
+    loadBackground();
+    loadPenzzleBody();
+    loadPuzzle();
+}
+// =====================================================================================================
+function loadPenzzleBody(){
     //penzzle zone
     var penzzleZone = game.add.graphics(50, 50);
     penzzleZone.lineStyle(4, 0xffd900, 1);
@@ -143,7 +156,7 @@ function create() {
     rotateButton = game.add.button(50, 225, 'rotateRight', rotateRight, this);
 
     //created a new button to flip the penzzle
-    flipButton = game.add.button(125,225,'flip',flipPenzzle,this);
+    flipButton = game.add.button(125,230,'flip',flipPenzzle,this);
 
     fakeHitZone.enableBody = true;
     game.physics.arcade.enable(fakeHitZone);
@@ -154,8 +167,27 @@ function create() {
     fakeHitZone.events.onDragUpdate.add(dragUpdate,this);
     fakeHitZone.events.onDragStop.add(stopDrag,this);
 
-    //We create and load the puzzle here
+    var retrybutton = game.add.button(400,550,'retry',restartLevel,this);
+    retrybutton.width=190;retrybutton.height=50;
+}
+// =====================================================================================================
+function restartLevel() {
+    for(i=0;i<puzzleSprites.length;i++){
+        puzzleSprites[i].kill();
+    }
+    puzzleSprites = [];
     loadPuzzle();
+}
+// =====================================================================================================
+//function load background
+function loadBackground(){
+    var starfield = game.add.tileSprite(0, 0, 800, 600, 'stars');
+    starfield.fixedToCamera = true;
+
+    var style = { font: "bold 32px Arial", fill: "#fff", boundsAlignH: "center", boundsAlignV: "middle" };
+
+    //  The Text is positioned at 0, 100
+    text = game.add.text(350, 0, "Penzzle", style);
 }
 //==========================================================================================
 // creates a row of blue sprites
@@ -288,12 +320,12 @@ function stopDrag() {
 
     }
     if(puzzleSprites.length==0){
-        var starfield2 = game.add.tileSprite(0, 0, 800, 600, 'stars');
-        starfield2.fixedToCamera = true;
+        game.world.removeAll();
+        loadBackground();
         var style2 = { font: "bold 40px Arial", fill: "#fff", boundsAlignH: "center", boundsAlignV: "middle" };
 
         //  The Text is positioned at 0, 100
-        text = game.add.text(350, 0, "Congratulations", style2);
+        text = game.add.text(275, 275, "Congratulations", style2);
     }
     penzzle.x = 125 ;
     penzzle.y = 125 ;
